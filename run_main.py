@@ -68,7 +68,7 @@ parser.add_argument('--output_attention', action='store_true')
 parser.add_argument('--patch_len', type=int, default=16)
 parser.add_argument('--stride', type=int, default=8)
 parser.add_argument('--prompt_domain', type=int, default=0)
-parser.add_argument('--llm_model', type=str, default='LLAMA')
+parser.add_argument('--llm_model', type=str, default='LLAMA', choices=['LLAMA', 'GPT2', 'BERT'], help="Select the LLM model")
 parser.add_argument('--llm_dim', type=int, default=4096)
 
 # optimization
