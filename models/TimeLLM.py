@@ -3,8 +3,9 @@ from math import sqrt
 import torch
 import torch.nn as nn
 
-from transformers import LlamaConfig, LlamaModel, LlamaTokenizer, GPT2Config, GPT2Model, GPT2Tokenizer, BertConfig, \
-    BertModel, BertTokenizer
+#from transformers import LlamaConfig, LlamaModel, LlamaTokenizer, GPT2Config, GPT2Model, GPT2Tokenizer, BertConfig, \
+    #BertModel, BertTokenizer
+from transformers import GPT2Model
 from layers.Embed import PatchEmbedding
 import transformers
 from layers.StandardNorm import Normalize
@@ -47,13 +48,8 @@ class Model(nn.Module):
             self.llama_config.output_attentions = True
             self.llama_config.output_hidden_states = True
             try:
-                self.llm_model = LlamaModel.from_pretrained(
-                    # "/mnt/alps/modelhub/pretrained_model/LLaMA/7B_hf/",
-                    'huggyllama/llama-7b',
-                    trust_remote_code=True,
-                    local_files_only=True,
-                    config=self.llama_config,
-                    # load_in_4bit=True
+                self.llm_model = GPT2Model.from_pretrained(
+                    "gpt2"
                 )
             except EnvironmentError:  # downloads model from HF is not already done
                 print("Local model files not found. Attempting to download...")
