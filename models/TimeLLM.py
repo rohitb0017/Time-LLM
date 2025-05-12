@@ -37,7 +37,7 @@ class Model(nn.Module):
         self.patch_len = configs.patch_len
         self.stride = configs.stride
 
-        # Replace LLAMA model with GPT2
+        # Model initialization block
         if configs.llm_model == 'GPT2':
             self.gpt2_config = GPT2Config.from_pretrained('gpt2')
             self.gpt2_config.num_hidden_layers = configs.llm_layers
@@ -46,17 +46,18 @@ class Model(nn.Module):
 
             try:
                 self.llm_model = GPT2Model.from_pretrained('gpt2', config=self.gpt2_config)
-            except EnvironmentError:  # downloads model from HF if not already done
+            except EnvironmentError:
                 print("Local GPT2 model files not found. Attempting to download...")
                 self.llm_model = GPT2Model.from_pretrained('gpt2', config=self.gpt2_config)
 
             try:
                 self.tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
-            except EnvironmentError:  # downloads the tokenizer from HF if not already done
+            except EnvironmentError:
                 print("Local tokenizer files not found. Attempting to download...")
                 self.tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+
         else:
-            raise Exception('LLM model is not defined')
+            raise NotImplementedError(f"Model {configs.llm_model} is not implemented or defined in the code.")
 
         # Ensure the tokenizer pad_token is defined
         if self.tokenizer.eos_token:
@@ -75,24 +76,20 @@ class Model(nn.Module):
             self.description = 'The Electricity Transformer Temperature (ETT) is a crucial indicator in the electric power long-term deployment.'
 
         self.dropout = nn.Dropout(configs.dropout)
-
         self.patch_embedding = PatchEmbedding(configs.d_model, self.patch_len, self.stride, configs.dropout)
-
         self.word_embeddings = self.llm_model.get_input_embeddings().weight
         self.vocab_size = self.word_embeddings.shape[0]
         self.num_tokens = 1000
         self.mapping_layer = nn.Linear(self.vocab_size, self.num_tokens)
 
         self.reprogramming_layer = ReprogrammingLayer(configs.d_model, configs.n_heads, self.d_ff, self.d_llm)
-
         self.patch_nums = int((configs.seq_len - self.patch_len) / self.stride + 2)
         self.head_nf = self.d_ff * self.patch_nums
 
         if self.task_name == 'long_term_forecast' or self.task_name == 'short_term_forecast':
-            self.output_projection = FlattenHead(configs.enc_in, self.head_nf, self.pred_len,
-                                                 head_dropout=configs.dropout)
+            self.output_projection = FlattenHead(configs.enc_in, self.head_nf, self.pred_len, head_dropout=configs.dropout)
         else:
-            raise NotImplementedError
+            raise NotImplementedError("Task not supported")
 
         self.normalize_layers = Normalize(configs.enc_in, affine=False)
 
