@@ -90,7 +90,7 @@ class Model(nn.Module):
         self.vocab_size = self.word_embeddings.shape[0]
 
         self.mapping_layer = nn.Linear(configs.d_model, self.d_llm)
-        self.reprogramming_layer = ReprogrammingLayer(configs.d_model, configs.n_heads, self.d_ff, self.d_llm)
+        self.reprogramming_layer = ReprogrammingLayer(d_model=configs.d_model, n_heads=configs.n_heads, d_llm=self.d_llm, attention_dropout=0.1)
 
         self.patch_nums = int((configs.seq_len - self.patch_len) / self.stride + 2)
         self.head_nf = self.d_ff * self.patch_nums
