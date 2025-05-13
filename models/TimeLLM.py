@@ -89,7 +89,7 @@ class Model(nn.Module):
         self.word_embeddings = self.llm_model.get_input_embeddings().weight
         self.vocab_size = self.word_embeddings.shape[0]
 
-        self.mapping_layer = nn.Linear(configs.d_model, self.d_llm)
+        self.mapping_layer = nn.Linear(self.d_llm, self.d_model)
         self.reprogramming_layer = ReprogrammingLayer(d_model=configs.d_model, n_heads=configs.n_heads, d_llm=self.d_llm, attention_dropout=0.1)
 
         self.patch_nums = int((configs.seq_len - self.patch_len) / self.stride + 2)
@@ -130,7 +130,7 @@ class Model(nn.Module):
         prompt_ids = self.tokenizer(prompt, return_tensors="pt", padding=True, truncation=True, max_length=2048).input_ids
         prompt_embeddings = self.llm_model.get_input_embeddings()(prompt_ids.to(x_enc.device))
 
-        source_embeddings = self.mapping_layer(self.word_embeddings.permute(1, 0))  # (vocab_size, d_llm)
+        source_embeddings = self.mapping_layer(self.word_embeddings)  # (vocab_size, d_llm)
 
         x_enc = x_enc.permute(0, 2, 1).contiguous()
         enc_out, n_vars = self.patch_embedding(x_enc)
