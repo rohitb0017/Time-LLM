@@ -89,6 +89,7 @@ class Model(nn.Module):
         self.word_embeddings = self.llm_model.get_input_embeddings().weight
         self.vocab_size = self.word_embeddings.shape[0]
         print(self.word_embeddings.shape)
+        print(self.d_llm)
         self.mapping_layer = nn.Linear(self.d_llm, 16)
         self.reprogramming_layer = ReprogrammingLayer(d_model=configs.d_model, n_heads=configs.n_heads, d_llm=self.d_llm, attention_dropout=0.1)
 
