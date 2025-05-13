@@ -80,7 +80,7 @@ class Model(nn.Module):
         self.word_embeddings = self.llm_model.get_input_embeddings().weight
         self.vocab_size = self.word_embeddings.shape[0]
         self.num_tokens = 1000
-        self.mapping_layer = nn.Linear(self.vocab_size, self.num_tokens)
+        self.mapping_layer = nn.Linear(self.vocab_size, self.d_llm)
 
         self.reprogramming_layer = ReprogrammingLayer(configs.d_model, configs.n_heads, self.d_ff, self.d_llm)
         self.patch_nums = int((configs.seq_len - self.patch_len) / self.stride + 2)
@@ -134,7 +134,7 @@ class Model(nn.Module):
         x_enc = x_enc.reshape(B, N, T).permute(0, 2, 1).contiguous()
 
         prompt = self.tokenizer(prompt, return_tensors="pt", padding=True, truncation=True, max_length=2048).input_ids
-        prompt_embeddings = self.llm_model.get_input_embeddings()(prompt.to(x_enc.device))  # (batch, prompt_token, dim)
+        prompt_embeddings = self.llm_model.get_input_embeddings()(prompt.to(x_enc.device))
 
         source_embeddings = self.mapping_layer(self.word_embeddings.permute(1, 0)).permute(1, 0)
 
@@ -172,10 +172,10 @@ class ReprogrammingLayer(nn.Module):
 
         d_keys = d_keys or (d_model // n_heads)
 
-        self.query_projection = nn.Linear(768,256)
-        self.key_projection = nn.Linear(768,256)
-        self.value_projection = nn.Linear(768,256)
-        self.out_projection = nn.Linear(256,768)
+        self.query_projection = nn.Linear(d_llm, d_keys)
+        self.key_projection = nn.Linear(d_llm, d_keys)
+        self.value_projection = nn.Linear(d_llm, d_keys)
+        self.out_projection = nn.Linear(d_keys, d_llm)
         self.n_heads = n_heads
         self.dropout = nn.Dropout(attention_dropout)
 
@@ -189,7 +189,6 @@ class ReprogrammingLayer(nn.Module):
         value_embedding = self.value_projection(value_embedding).view(S, H, -1)
 
         out = self.reprogramming(target_embedding, source_embedding, value_embedding)
-
         out = out.reshape(B, L, -1)
 
         return self.out_projection(out)
@@ -198,9 +197,7 @@ class ReprogrammingLayer(nn.Module):
         B, L, H, E = target_embedding.shape
 
         scale = 1. / sqrt(E)
-
         scores = torch.einsum("blhe,she->bhls", target_embedding, source_embedding)
-
         A = self.dropout(torch.softmax(scale * scores, dim=-1))
         reprogramming_embedding = torch.einsum("bhls,she->blhe", A, value_embedding)
 
