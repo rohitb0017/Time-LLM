@@ -25,7 +25,6 @@ class FlattenHead(nn.Module):
 
 
 class Model(nn.Module):
-
     def __init__(self, configs, patch_len=16, stride=8):
         super(Model, self).__init__()
         self.task_name = configs.task_name
@@ -34,7 +33,6 @@ class Model(nn.Module):
         self.d_ff = configs.d_ff
         self.top_k = 5
         self.d_llm = configs.llm_dim
-        #self.d_llm = 16
         self.patch_len = configs.patch_len
         self.stride = configs.stride
 
@@ -83,7 +81,7 @@ class Model(nn.Module):
         self.num_tokens = 1000
         self.mapping_layer = nn.Linear(self.vocab_size, self.d_llm)
 
-        self.reprogramming_layer = ReprogrammingLayer(configs.d_model, configs.n_heads, self.d_ff, self.d_llm)
+        self.reprogramming_layer = ReprogrammingLayer(configs.d_model, configs.n_heads, self.d_llm)
         self.patch_nums = int((configs.seq_len - self.patch_len) / self.stride + 2)
         self.head_nf = self.d_ff * self.patch_nums
 
@@ -168,10 +166,10 @@ class Model(nn.Module):
 
 
 class ReprogrammingLayer(nn.Module):
-    def __init__(self, d_model, n_heads, d_keys=None, d_llm=None, attention_dropout=0.1):
+    def __init__(self, d_model, n_heads, d_llm=None, attention_dropout=0.1):
         super(ReprogrammingLayer, self).__init__()
 
-        d_keys = d_keys or (d_model // n_heads)
+        d_keys = d_model // n_heads  # Calculate d_keys dynamically based on d_model and n_heads
 
         self.query_projection = nn.Linear(d_llm, d_keys)
         self.key_projection = nn.Linear(d_llm, d_keys)
@@ -184,10 +182,12 @@ class ReprogrammingLayer(nn.Module):
         B, L, _ = target_embedding.shape
         S, _ = source_embedding.shape
         H = self.n_heads
+        d_keys = target_embedding.shape[-1]  # Use dynamic calculation of d_keys
 
-        target_embedding = self.query_projection(target_embedding).view(B, L, H, d_keys//H)
-        source_embedding = self.key_projection(source_embedding).view(S, H, d_keys//H)
-        value_embedding = self.value_projection(value_embedding).view(S, H, d_keys//H)
+        # Project embeddings for the attention mechanism
+        target_embedding = self.query_projection(target_embedding).view(B, L, H, d_keys // H)
+        source_embedding = self.key_projection(source_embedding).view(S, H, d_keys // H)
+        value_embedding = self.value_projection(value_embedding).view(S, H, d_keys // H)
 
         out = self.reprogramming(target_embedding, source_embedding, value_embedding)
         out = out.reshape(B, L, -1)
