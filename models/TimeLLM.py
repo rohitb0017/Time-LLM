@@ -142,6 +142,7 @@ class Model(nn.Module):
         enc_out, n_vars = self.patch_embedding(x_enc)
         
         # Mapping to d_llm size
+        print(enc_out.shape)
         enc_out = self.mapping_layer(enc_out)  # Project to d_llm
         enc_out = self.reprogramming_layer(enc_out, source_embeddings, source_embeddings)
 
