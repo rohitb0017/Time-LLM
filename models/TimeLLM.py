@@ -33,8 +33,8 @@ class Model(nn.Module):
         self.seq_len = configs.seq_len
         self.d_ff = configs.d_ff
         self.top_k = 5
-        #self.d_llm = configs.llm_dim
-        self.d_llm = 16
+        self.d_llm = configs.llm_dim
+        #self.d_llm = 16
         self.patch_len = configs.patch_len
         self.stride = configs.stride
 
@@ -137,7 +137,7 @@ class Model(nn.Module):
         prompt = self.tokenizer(prompt, return_tensors="pt", padding=True, truncation=True, max_length=2048).input_ids
         prompt_embeddings = self.llm_model.get_input_embeddings()(prompt.to(x_enc.device))
 
-        source_embeddings = self.mapping_layer(self.word_embeddings.permute(1, 0)).permute(1, 0)
+        source_embeddings = self.mapping_layer(self.word_embeddings.permute(1, 0))
 
         x_enc = x_enc.permute(0, 2, 1).contiguous()
         enc_out, n_vars = self.patch_embedding(x_enc)
@@ -173,10 +173,10 @@ class ReprogrammingLayer(nn.Module):
 
         d_keys = d_keys or (d_model // n_heads)
 
-        self.query_projection = nn.Linear(16, d_keys)
-        self.key_projection = nn.Linear(16, d_keys)
-        self.value_projection = nn.Linear(16, d_keys)
-        self.out_projection = nn.Linear(d_keys, 16)
+        self.query_projection = nn.Linear(d_llm, d_keys)
+        self.key_projection = nn.Linear(d_llm, d_keys)
+        self.value_projection = nn.Linear(d_llm, d_keys)
+        self.out_projection = nn.Linear(d_keys, d_llm)
         self.n_heads = n_heads
         self.dropout = nn.Dropout(attention_dropout)
 
