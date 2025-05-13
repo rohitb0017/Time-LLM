@@ -141,6 +141,7 @@ class Model(nn.Module):
 
         x_enc = x_enc.permute(0, 2, 1).contiguous()
         enc_out, n_vars = self.patch_embedding(x_enc)
+        enc_out = self.mapping_layer(enc_out)  
         enc_out = self.reprogramming_layer(enc_out, source_embeddings, source_embeddings)
         gpt2_enc_out = torch.cat([prompt_embeddings, enc_out], dim=1)
         dec_out = self.llm_model(inputs_embeds=gpt2_enc_out).last_hidden_state
