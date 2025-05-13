@@ -172,10 +172,10 @@ class ReprogrammingLayer(nn.Module):
 
         d_keys = d_keys or (d_model // n_heads)
 
-        self.query_projection = nn.Linear(d_model, d_keys * n_heads)
-        self.key_projection = nn.Linear(d_llm, d_keys * n_heads)
-        self.value_projection = nn.Linear(d_llm, d_keys * n_heads)
-        self.out_projection = nn.Linear(d_keys * n_heads, d_llm)
+        self.query_projection = nn.Linear(768,256)
+        self.key_projection = nn.Linear(768,256)
+        self.value_projection = nn.Linear(768,256)
+        self.out_projection = nn.Linear(256,768)
         self.n_heads = n_heads
         self.dropout = nn.Dropout(attention_dropout)
 
