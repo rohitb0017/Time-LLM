@@ -171,36 +171,46 @@ class ReprogrammingLayer(nn.Module):
     def __init__(self, d_model, n_heads, d_llm=None, attention_dropout=0.1):
         super(ReprogrammingLayer, self).__init__()
 
-        d_keys = d_model // n_heads
-
-        self.query_projection = nn.Linear(d_llm, d_keys)
-        self.key_projection = nn.Linear(d_llm, d_keys)
-        self.value_projection = nn.Linear(d_llm, d_keys)
-        self.out_projection = nn.Linear(d_keys, d_llm)
+        # HARDCODE THESE TO MATCH YOUR MODEL
+        self.d_llm = d_llm        # e.g. 768 (GPT-2 embedding size)
+        self.d_model = d_model    # e.g. 16 (your patch embedding output)
         self.n_heads = n_heads
+        self.d_keys = 16          # HARD-CODED: attention head dim
         self.dropout = nn.Dropout(attention_dropout)
 
+        # Match projection dimensions for compatibility
+        self.query_projection = nn.Linear(self.d_model, self.d_keys * self.n_heads)
+        self.key_projection = nn.Linear(self.d_llm, self.d_keys * self.n_heads)
+        self.value_projection = nn.Linear(self.d_llm, self.d_keys * self.n_heads)
+
+        self.out_projection = nn.Linear(self.d_keys * self.n_heads, self.d_model)
+
     def forward(self, target_embedding, source_embedding, value_embedding):
-        B, L, _ = target_embedding.shape
-        S, _ = source_embedding.shape
+        B, L, _ = target_embedding.shape   # (batch, length, d_model)
+        S, _ = source_embedding.shape      # (source_len, d_llm)
         H = self.n_heads
-        d_keys = self.query_projection.out_features  # Ensure consistent dimension for projections
+        E = self.d_keys
 
-        target_embedding = self.query_projection(target_embedding).view(B, L, H, d_keys//H)
-        source_embedding = self.key_projection(source_embedding).view(S, H, d_keys//H)
-        value_embedding = self.value_projection(value_embedding).view(S, H, d_keys//H)
+        # (B, L, d_model) → (B, L, H, E)
+        target_embedding = self.query_projection(target_embedding).view(B, L, H, E)
 
-        out = self.reprogramming(target_embedding, source_embedding, value_embedding)
-        out = out.reshape(B, L, -1)
+        # (S, d_llm) → (S, H, E)
+        source_embedding = self.key_projection(source_embedding).view(S, H, E)
+        value_embedding = self.value_projection(value_embedding).view(S, H, E)
 
+        out = self.reprogramming(target_embedding, source_embedding, value_embedding)  # (B, L, H, E)
+
+        out = out.reshape(B, L, H * E)  # Flatten to (B, L, d_model)
         return self.out_projection(out)
 
     def reprogramming(self, target_embedding, source_embedding, value_embedding):
-        B, L, H, E = target_embedding.shape
-
+        B, L, H, E = target_embedding.shape  # (B, L, H, E)
         scale = 1. / sqrt(E)
-        scores = torch.einsum("blhe,she->bhls", target_embedding, source_embedding)
-        A = self.dropout(torch.softmax(scale * scores, dim=-1))
-        reprogramming_embedding = torch.einsum("bhls,she->blhe", A, value_embedding)
 
+        # (B, L, H, E) × (S, H, E) → (B, H, L, S)
+        scores = torch.einsum("blhe,she->bhls", target_embedding, source_embedding)
+        A = self.dropout(torch.softmax(scale * scores, dim=-1))  # Attention weights
+
+        # (B, H, L, S) × (S, H, E) → (B, L, H, E)
+        reprogramming_embedding = torch.einsum("bhls,she->blhe", A, value_embedding)
         return reprogramming_embedding
