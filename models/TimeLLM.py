@@ -185,9 +185,9 @@ class ReprogrammingLayer(nn.Module):
         S, _ = source_embedding.shape
         H = self.n_heads
 
-        target_embedding = self.query_projection(target_embedding).view(B, L, H, -1)
-        source_embedding = self.key_projection(source_embedding).view(S, H, -1)
-        value_embedding = self.value_projection(value_embedding).view(S, H, -1)
+        target_embedding = self.query_projection(target_embedding).view(B, L, H, d_keys//H)
+        source_embedding = self.key_projection(source_embedding).view(S, H, d_keys//H)
+        value_embedding = self.value_projection(value_embedding).view(S, H, d_keys//H)
 
         out = self.reprogramming(target_embedding, source_embedding, value_embedding)
         out = out.reshape(B, L, -1)
