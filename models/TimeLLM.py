@@ -136,7 +136,7 @@ class Model(nn.Module):
         prompt_embeddings = self.llm_model.get_input_embeddings()(prompt_ids.to(x_enc.device))
 
         # Correct embedding usage with transpose
-        source_embeddings = self.mapping_layer(self.word_embeddings.T)  # Transpose the word_embeddings
+        source_embeddings = self.mapping_layer(self.word_embeddings)  # Transpose the word_embeddings
 
         x_enc = x_enc.permute(0, 2, 1).contiguous()
         enc_out, n_vars = self.patch_embedding(x_enc)
