@@ -80,7 +80,7 @@ class Model(nn.Module):
         self.word_embeddings = self.llm_model.get_input_embeddings().weight
         self.vocab_size = self.word_embeddings.shape[0]
         self.num_tokens = 1000
-        self.mapping_layer = nn.Linear(self.vocab_size, self.d_llm=16)
+        self.mapping_layer = nn.Linear(self.vocab_size, self.d_llm==16)
 
         self.reprogramming_layer = ReprogrammingLayer(configs.d_model, configs.n_heads, self.d_ff, self.d_llm)
         self.patch_nums = int((configs.seq_len - self.patch_len) / self.stride + 2)
@@ -172,10 +172,10 @@ class ReprogrammingLayer(nn.Module):
 
         d_keys = d_keys or (d_model // n_heads)
 
-        self.query_projection = nn.Linear(d_llm=16, d_keys)
-        self.key_projection = nn.Linear(d_llm=16, d_keys)
-        self.value_projection = nn.Linear(d_llm=16, d_keys)
-        self.out_projection = nn.Linear(d_keys, d_llm=16)
+        self.query_projection = nn.Linear(d_llm==16, d_keys)
+        self.key_projection = nn.Linear(d_llm==16, d_keys)
+        self.value_projection = nn.Linear(d_llm==16, d_keys)
+        self.out_projection = nn.Linear(d_keys, d_llm==16)
         self.n_heads = n_heads
         self.dropout = nn.Dropout(attention_dropout)
 
