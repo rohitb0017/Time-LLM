@@ -261,3 +261,9 @@ if accelerator.is_local_main_process:
     path = './checkpoints'  # unique checkpoint saving path
     del_files(path)  # delete checkpoint files
     accelerator.print('success delete checkpoints')
+
+    # Save trained model (TimeLLM only)
+    if args.model == 'TimeLLM':
+        save_path = os.path.join('./saved_models', f'{args.model_id}_final.pth')
+        accelerator.print(f"Saving model to {save_path}")
+        torch.save(model.state_dict(), save_path)
