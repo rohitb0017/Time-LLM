@@ -165,11 +165,11 @@ def vali(args, accelerator, model, vali_data, vali_loader, criterion, mae_metric
 
             outputs, batch_y = accelerator.gather_for_metrics((outputs, batch_y))
 
-            # f_dim = -1 if args.features == 'MS' else 0
-            # outputs = outputs[:, -args.pred_len:, f_dim:]
-            # batch_y = batch_y[:, -args.pred_len:, f_dim:].to(accelerator.device)
-            output = output[:, -args.pred_len:, :]
-            batch_y = batch_y[:, -args.pred_len:, :]
+            f_dim = -1 if args.features == 'MS' else 0
+            outputs = outputs[:, -args.pred_len:, f_dim:]
+            batch_y = batch_y[:, -args.pred_len:, f_dim:].to(accelerator.device)
+            # output = output[:, -args.pred_len:, :]
+            # batch_y = batch_y[:, -args.pred_len:, :]
 
 
             pred = outputs.detach()
