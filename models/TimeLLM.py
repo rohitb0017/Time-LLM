@@ -87,12 +87,14 @@ class Model(nn.Module):
             self.gpt2_config.output_attentions = True
             self.gpt2_config.output_hidden_states = True
             try:
-                self.llm_model = GPT2Model.from_pretrained(
-                    'openai-community/gpt2',
-                    trust_remote_code=True,
-                    local_files_only=True,
-                    config=self.gpt2_config,
-                )
+                # self.llm_model = GPT2Model.from_pretrained(
+                #     'openai-community/gpt2',
+                #     trust_remote_code=True,
+                #     local_files_only=True,
+                #     config=self.gpt2_config,
+                # )
+                self.llm_model = GPT2Model.from_pretrained("gpt2")
+
             except EnvironmentError:  # downloads model from HF is not already done
                 print("Local model files not found. Attempting to download...")
                 self.llm_model = GPT2Model.from_pretrained(
