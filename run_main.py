@@ -199,9 +199,12 @@ for ii in range(args.itr):
                     else:
                         outputs = model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
 
-                    f_dim = -1 if args.features == 'MS' else 0
-                    outputs = outputs[:, -args.pred_len:, f_dim:]
-                    batch_y = batch_y[:, -args.pred_len:, f_dim:].to(accelerator.device)
+                    # f_dim = -1 if args.features == 'MS' else 0
+                    # outputs = outputs[:, -args.pred_len:, f_dim:]
+                    # batch_y = batch_y[:, -args.pred_len:, f_dim:].to(accelerator.device)
+                    outputs = outputs[:, -args.pred_len:, :]
+                    batch_y = batch_y[:, -args.pred_len:, :]
+
                     loss = criterion(outputs, batch_y)
                     train_loss.append(loss.item())
             else:
@@ -210,9 +213,12 @@ for ii in range(args.itr):
                 else:
                     outputs = model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
 
-                f_dim = -1 if args.features == 'MS' else 0
-                outputs = outputs[:, -args.pred_len:, f_dim:]
-                batch_y = batch_y[:, -args.pred_len:, f_dim:]
+                # f_dim = -1 if args.features == 'MS' else 0
+                # outputs = outputs[:, -args.pred_len:, f_dim:]
+                # batch_y = batch_y[:, -args.pred_len:, f_dim:]
+                outputs = outputs[:, -args.pred_len:, :]
+                batch_y = batch_y[:, -args.pred_len:, :]
+
                 loss = criterion(outputs, batch_y)
                 train_loss.append(loss.item())
 
