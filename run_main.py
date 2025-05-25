@@ -213,7 +213,7 @@ for ii in range(args.itr):
                 #print(outputs)
                 print('Outputs shape:', outputs.shape)
                 #print(batch_y)
-                print('Ground truth y shape: 'batch_y.shape)
+                print('Ground truth y shape:', batch_y.shape)
                 loss = criterion(outputs, batch_y)
                 train_loss.append(loss.item())
 
