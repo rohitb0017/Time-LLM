@@ -36,8 +36,8 @@ class Dataset_ETT_hour(Dataset):
         self.freq = freq
 
         # self.percent = percent
-        self.root_path = root_path
-        self.data_path = data_path
+        self.root_path = '/kaggle/working/Time-LLM'
+        self.data_path = '/datasets/ETTh1.csv'
         self.__read_data__()
 
         self.enc_in = self.data_x.shape[-1]
