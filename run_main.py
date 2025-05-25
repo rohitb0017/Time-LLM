@@ -100,8 +100,8 @@ parser.add_argument('--percent', type=int, default=100)
 
 args = parser.parse_args()
 ddp_kwargs = DistributedDataParallelKwargs(find_unused_parameters=True)
-# deepspeed_plugin = DeepSpeedPlugin(hf_ds_config='/kaggle/working/Time-LLM/ds_config_zero2.json')
-deepspeed_plugin = DeepSpeedPlugin(hf_ds_config='/content/Time-LLM/ds_config_zero2.json')
+deepspeed_plugin = DeepSpeedPlugin(hf_ds_config='/kaggle/working/Time-LLM/ds_config_zero2.json')
+# deepspeed_plugin = DeepSpeedPlugin(hf_ds_config='/content/Time-LLM/ds_config_zero2.json')
 accelerator = Accelerator(kwargs_handlers=[ddp_kwargs], deepspeed_plugin=deepspeed_plugin)
 
 for ii in range(args.itr):
